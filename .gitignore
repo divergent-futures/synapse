@@ -1,0 +1,13 @@
+# LibreOffice / Office lock & temp files
+.~lock.*#
+~$*
+*.tmp
+
+# OS cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
