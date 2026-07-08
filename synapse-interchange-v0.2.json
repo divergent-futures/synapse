@@ -1,0 +1,113 @@
+{
+  "format": "synapse-helm-interchange",
+  "version": "0.2",
+  "date": "2026-07-07",
+  "summary": "Richer data model for Synapse makers plus the Helm<->Synapse enrichment interchange. Synapse pushes PUBLIC maker signals; Helm returns contextual knowledge (universities, state grants, companies by geo+field). Private individuals are represented as PROJECTS, not tracked person entities, unless they are genuine public figures.",
+  "changes_from_v0_1": [
+    "Stable identity: id + external_ids so a maker persists across years/events.",
+    "location{} for regional grants, clusters and local talent matching.",
+    "affiliations[] (university/school/lab/team) - important for young/student makers.",
+    "history[] for multi-year appearances and visible progress over time.",
+    "entrepreneurship_signals{} (business, crowdfunding, hiring, patents).",
+    "links[] with kind, so UIs can show icons and respect the no-Instagram-photo guardrail.",
+    "is_public_figure flag to distinguish trackable people from project-only entries."
+  ],
+  "guardrails": {
+    "links": "Public profile/website links only. Store Instagram as a profile URL; NEVER scrape or embed Instagram photos.",
+    "attribution": "Base data derived from the public Open Sauce exhibits page; Open Sauce is not affiliated.",
+    "four_themes": "Abundance/Progress/Stagnation/Collapse are the Divergent Futures channel lens only - never a per-maker rating.",
+    "privacy": "Only public figures are person-entities; everyone else is a project."
+  },
+
+  "app_embedding": {
+    "_doc": "How the single-file Synapse app inlines these records. Base keys are compacted and any empty optional field is dropped, so the embedded JSON for ~225 makers stays small; the UI renders only fields that are present.",
+    "aliases": { "n": "name", "m": "maker", "c": "category" },
+    "always_present": ["n", "m", "c", "id"],
+    "optional_when_enriched": ["project", "description", "tags", "location", "affiliations", "links", "entrepreneurship_signals", "history", "external_ids", "is_public_figure"],
+    "enrichment_source": "src/enrich.py (keyed by exact exhibitor name).",
+    "personalization": "Optional persona (visitor/exhibitor/sponsor/explore) + interests are stored only in the browser's localStorage and never transmitted; they drive the app's 'For You' recommendations and pre-seed field selection."
+  },
+
+  "maker_record": {
+    "_doc": "The core shape Synapse holds per exhibit/maker and pushes to Helm. Optional fields may be null/absent; the app renders what exists.",
+    "id": "os2026-bay-area-droid-builders",
+    "external_ids": { "opensauce_slug": "bay-area-droid-builders", "youtube": null, "github": null },
+    "name": "Bay Area Droid Builders",
+    "maker": "Bay Area Droid Builders",
+    "project": "Star Wars droid builds (R2, R5, BB-8, Chopper)",
+    "category": "Robotics and Automation",
+    "tags": ["robotics", "animatronics", "cosplay", "community"],
+    "description": "",
+    "is_public_figure": false,
+    "location": { "city": null, "state": null, "country": "US", "region": null },
+    "affiliations": [
+      { "type": "club", "name": "R2 Builders Club", "url": null }
+    ],
+    "links": [
+      { "label": "Website", "url": "", "kind": "website" },
+      { "label": "YouTube", "url": "", "kind": "youtube" },
+      { "label": "Instagram", "url": "", "kind": "instagram_profile" },
+      { "label": "GitHub", "url": "", "kind": "github" }
+    ],
+    "entrepreneurship_signals": {
+      "has_business": false,
+      "crowdfunding": null,
+      "hiring": false,
+      "patents_or_ip": false,
+      "for_sale": false
+    },
+    "history": [
+      { "year": 2026, "event": "Open Sauce", "showed": "R2 and R5 units, BB-8, Chopper", "booth": null }
+    ]
+  },
+
+  "link_kinds": ["website", "youtube", "instagram_profile", "github", "tiktok", "x", "patreon", "kickstarter", "store", "linkedin", "other"],
+
+  "enrichment_request": {
+    "_doc": "Synapse -> Helm. Ask for contextual knowledge for a maker or a field+geo.",
+    "for": "os2026-bay-area-droid-builders",
+    "field": "Robotics and Automation",
+    "geo": { "state": "CA", "region": "Bay Area" },
+    "want": ["universities", "state_grants", "companies", "competitions", "accelerators"]
+  },
+
+  "enrichment_response": {
+    "_doc": "Helm -> Synapse. Contextual knowledge to attach to the maker / field, by geography and domain.",
+    "for": "os2026-bay-area-droid-builders",
+    "universities": [
+      { "name": "UC Berkeley", "program": "Jacobs Institute / robotics", "url": "" }
+    ],
+    "grants": [
+      { "name": "California innovation / matching grant", "level": "state", "url": "", "notes": "Verify current program." }
+    ],
+    "companies": [
+      { "name": "Agility Robotics", "relation": "hire/partner", "url": "" }
+    ],
+    "competitions": [
+      { "name": "RoboGames", "url": "" }
+    ],
+    "accelerators": [
+      { "name": "HAX (SOSV)", "url": "https://hax.co/" }
+    ],
+    "notes": "Cross-cutting (all fields): SBIR/America's Seed Fund, Techstars, Crowd Supply, Kickstarter, SBDC/SCORE."
+  },
+
+  "field_record": {
+    "_doc": "Opportunity map per domain (already in Synapse; unchanged shape).",
+    "f": "Robotics and Automation",
+    "ind": "Industrial automation; warehouse & logistics; agtech; humanoid & service robots; defense",
+    "co": "Boston Dynamics; Agility Robotics; Figure; iRobot; ABB; FANUC",
+    "fund": "MassRobotics; HAX; SBIR/STTR (NSF, DoD)",
+    "spon": "Drover Labs; NestWorks; Vision Miner; Seeed; Raspberry Pi"
+  },
+
+  "convergence_record": {
+    "_doc": "A cross-domain combination. 'fl' lists the fields it bridges. 'p' is a colour key only (green/purple/orange/red) - NOT a maker rating.",
+    "t": "Student ground-to-space telemetry",
+    "a": "Saddleback Rocketry",
+    "b": "DIY Satellite Antennas + ADSBee + Magnoplotter",
+    "i": "Amateur rocket & drone teams gain a shared long-range tracking and downlink stack.",
+    "o": "Firefly Aerospace, Space Enterprise @ Berkeley, aero grants",
+    "fl": ["Rocketry Space and Aero", "Electronics and Hardware"]
+  }
+}
